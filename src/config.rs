@@ -47,8 +47,8 @@ pub fn init(dir: String) -> Result<Cfg> {
         None => PathBuf::from(dir),
     };
 
-    let cwd = cwd.join("tasks.toml");
-    let mut xf = XFile::<Config>::default().path(cwd.to_str().unwrap());
+    let cfg_dir = cwd.join("tasks.toml");
+    let mut xf = XFile::<Config>::default().path(cfg_dir.to_str().unwrap());
     xf.load().unwrap();
 
     let mut tasks = {

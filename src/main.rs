@@ -10,7 +10,7 @@ fn setup_log() -> Result<()> {
     //     .append(true)
     //     .open("./ecfg.log")?;
     let filter: EnvFilter = EnvFilter::builder()
-        .with_default_directive(LevelFilter::TRACE.into())
+        .with_default_directive(LevelFilter::INFO.into())
         .from_env()?;
     tracing_subscriber::fmt()
         .with_env_filter(filter)
