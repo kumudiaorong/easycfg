@@ -46,6 +46,7 @@ pub fn init(dir: String) -> Result<Cfg> {
         Some(p) => home.join(p),
         None => PathBuf::from(dir),
     };
+    let cwd = std::fs::canonicalize(cwd)?;
 
     let cfg_dir = cwd.join("tasks.toml");
     let mut xf = XFile::<Config>::default().path(cfg_dir.to_str().unwrap());
