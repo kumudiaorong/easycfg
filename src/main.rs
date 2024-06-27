@@ -27,7 +27,6 @@ fn main() -> Result<()> {
     info!("distribution: {}", server_builder.distri);
     let cfg = config::init(args.directory)?;
     let server = server_builder.build(cfg)?;
-    return Ok(());
     let mut tui = Tui::new(server);
     tui.run()?;
     Ok(())
