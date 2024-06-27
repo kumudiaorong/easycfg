@@ -6,3 +6,21 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "4.5.4", features = ["derive"] }
+crossterm = "0.27.0"
+ratatui = { version = "0.26.1", features = ["all-widgets"] }
+serde = { version = "1.0.197", features = ["derive"] }
+xcfg-rs = { version = "0.2.2", features = ["yaml"] }
+dirs = "5.0.1"
+regex = "1.10.5"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
+anyhow = "1.0.86"
+strum_macros = "0.26.4"
+tracing = "0.1.40"
+
+[dev-dependencies]
+xcfg-rs = "0.2.2"
+
+
+[[bin]]
+name = "gen_config"
