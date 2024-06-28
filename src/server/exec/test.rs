@@ -15,7 +15,10 @@ fn symlink() {
     let src = testdir.to_string() + "/test.txt";
     fs::write(&src, "Hello, World!").unwrap();
     let src = fs::canonicalize(src).unwrap();
-    let mut exec = super::Executer::new(crate::config::Distri::Unknown);
+    let mut exec = super::Executer::new(
+        crate::config::Distri::Unknown,
+        std::env::current_dir().unwrap(),
+    );
     let dst = testdir.to_string() + "/test_link.txt";
     exec.symlink(&src, &dst).unwrap();
     assert_eq!(fs::read_to_string(&dst).unwrap(), "Hello, World!");

@@ -6,6 +6,7 @@ use super::config::Cfg;
 use super::config::Distri;
 use std::io::Write;
 use std::io::{Error as IoError, ErrorKind as IoErrorKind, Result as IoResult};
+use std::path::PathBuf;
 use std::process::Output;
 
 // const ROOT_SHELL: [&str; 1] = ["bash"];
@@ -14,6 +15,7 @@ use std::process::Output;
 pub struct ServerBuilder {
     pub distri: Distri,
     root: Option<String>,
+    current_dir: PathBuf,
 }
 
 impl ServerBuilder {
@@ -21,7 +23,12 @@ impl ServerBuilder {
         Self {
             distri: get_release(),
             root: None,
+            current_dir: PathBuf::new(),
         }
+    }
+    pub fn current_dir(mut self, current_dir: PathBuf) -> Self {
+        self.current_dir = current_dir;
+        self
     }
     fn check_root(&mut self, cfg: &Cfg) -> Result<()> {
         let mut need_root = false;
@@ -44,7 +51,10 @@ impl ServerBuilder {
     }
     pub fn build(mut self, cfg: Cfg) -> Result<Server> {
         self.check_root(&cfg)?;
-        Ok(Server::new(self.distri, cfg))
+        if self.current_dir.as_os_str().is_empty() {
+            self.current_dir = std::env::current_dir()?;
+        }
+        Ok(Server::new(self.distri, cfg, self.current_dir))
     }
 }
 
@@ -55,10 +65,10 @@ pub struct Server {
 }
 
 impl Server {
-    pub fn new(distri: Distri, cfg: Cfg) -> Self {
+    pub fn new(distri: Distri, cfg: Cfg, current_dir: PathBuf) -> Self {
         Self {
             cfg,
-            exec: exec::Executer::new(distri),
+            exec: exec::Executer::new(distri, current_dir),
         }
     }
     pub fn exec(&mut self, name: &str) -> (Vec<Output>, IoResult<()>) {

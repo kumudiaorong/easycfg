@@ -3,20 +3,24 @@ use crate::config::Task;
 use pkg::DistriOpt;
 use std::io::{ErrorKind as IoErrorKind, Result as IoResult};
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Output;
 #[derive(Default, Debug)]
 pub struct Executer {
     distri: DistriOpt,
+    current_dir: PathBuf,
 }
 
 impl Executer {
-    pub fn new(distri: crate::config::Distri) -> Self {
+    pub fn new(distri: crate::config::Distri, current_dir: PathBuf) -> Self {
         Self {
             distri: distri.into(),
+            current_dir,
         }
     }
-    fn exec_cmd(&self, cmd: &str) -> Result<Output, std::io::Error> {
+    fn exec_cmd(&self, cmd: &str, current_dir: PathBuf) -> IoResult<Output> {
         std::process::Command::new("sh")
+            .current_dir(current_dir)
             .args(["-c", cmd])
             .stdout(std::process::Stdio::piped())
             .stderr(std::process::Stdio::piped())
@@ -35,22 +39,20 @@ impl Executer {
                 }
             };
             // println!("first result: {:?}", result);
-            let err = match result {
-                Ok(_) => break Ok(()),
-                Err(e) => e,
+            let Err(err) = result else {
+                break Ok(());
             };
             match err.kind() {
                 IoErrorKind::AlreadyExists => {
-                    if let Err(e) = std::fs::remove_file(&dst) {
-                        break Err(e);
-                    }
+                    std::fs::remove_file(&dst).or_else(|_| std::fs::remove_dir_all(&dst))?;
                 }
                 IoErrorKind::NotFound => {
-                    if let Some(dst_parent) = dst.as_ref().parent() {
-                        if let Err(e) = std::fs::create_dir_all(dst_parent) {
-                            break Err(e);
-                        }
-                    }
+                    // let a=IoErrorKind::IsADirectory;
+                    let _ = dst
+                        .as_ref()
+                        .parent()
+                        .ok_or(err)
+                        .map(std::fs::create_dir_all)?;
                 }
                 _ => break Err(err),
             };
@@ -92,7 +94,11 @@ impl Executer {
                     stderr: Vec::new(),
                     status: std::process::ExitStatus::default(),
                 };
-                match self.exec_cmd(cmd) {
+                match self.exec_cmd(
+                    cmd,
+                    self.current_dir
+                        .join(task.path.as_deref().unwrap_or(task.name.as_str())),
+                ) {
                     Ok(exec_output) => {
                         output.stdout.extend(exec_output.stdout.into_iter());
                         if !exec_output.stderr.is_empty() {

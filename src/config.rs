@@ -37,7 +37,7 @@ pub struct Config {
 
 pub type Cfg = LinuxConfig;
 
-pub fn init(dir: String) -> Result<Cfg> {
+pub fn init(dir: String) -> Result<(Cfg, PathBuf)> {
     let home = dirs::home_dir().ok_or(IoError::new(
         IoErrorKind::Other,
         "Could not find home directory",
@@ -72,7 +72,7 @@ pub fn init(dir: String) -> Result<Cfg> {
             }
         }
     }
-    Ok(tasks)
+    Ok((tasks, cwd))
 }
 
 #[cfg(test)]

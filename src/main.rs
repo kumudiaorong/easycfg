@@ -25,8 +25,8 @@ fn main() -> Result<()> {
     info!("easycfg directory: {}", args.directory);
     let server_builder = server::ServerBuilder::new();
     info!("distribution: {}", server_builder.distri);
-    let cfg = config::init(args.directory)?;
-    let server = server_builder.build(cfg)?;
+    let (cfg, cwd) = config::init(args.directory)?;
+    let server = server_builder.current_dir(cwd).build(cfg)?;
     let mut tui = Tui::new(server);
     tui.run()?;
     Ok(())
